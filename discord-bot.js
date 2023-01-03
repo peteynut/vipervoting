@@ -46,5 +46,9 @@ client.on(Events.InteractionCreate, async interaction => {
 		await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
 	}
 });
+client.on(Events.InteractionCreate, interaction => {
+    if (!interaction.isButton()) return;
+    console.log(interaction);
+});
 // Log in to Discord with your client's token
 client.login(process.env.CLIENT_TOKEN);
