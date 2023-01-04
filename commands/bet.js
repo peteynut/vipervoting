@@ -1,4 +1,5 @@
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder, EmbedBuilder, moveElementInArray, messageLink } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const fs = require('fs')
 
 var player1_string = 'Player 1'
 var player2_string = 'Player 2'
@@ -9,7 +10,14 @@ var timeleft = 0
 var p1_percent = 0
 var p2_percent = 0
 var winning_player = "Draw"
+var winning_percentage = "50"
+var battle_info_file ={
+	"player1": 'Player 1',
+	"player2": 'Player 2',
+	"winner": 'Draw',
+	"bypercent": 50,}
 var bets_open = false
+var embed_spacer = "|--------------|"
 
 function bet_calculate (p1,p2){
 	var total_percent = p1 + p2
@@ -17,14 +25,36 @@ function bet_calculate (p1,p2){
 	p2_percent = p2 / total_percent * 100;
 	if(p1_percent == p2_percent){
 		winning_player = "Draw"
+		winning_percentage = 50
 	}
 	else if(p1_percent <= p2_percent){
 		winning_player = player2_string
+		winning_percentage = p2_percent
 	}
 	else if(p2_percent <= p1_percent){
 		winning_player = player1_string
+		winning_percentage = p1_percent
 	}
+	update_battlefile();
 	return(p1_percent,p2_percent);
+}
+
+// Function for writing battle info to json file
+function update_battlefile(){
+	battle_info_file = {
+		"player1": player1_string,
+		"player2": player2_string,
+		"winner": winning_player,
+		"bypercent": parseFloat(winning_percentage).toFixed(2),
+	}
+	
+	fs.writeFile('./files/battle_info_file.json',JSON.stringify(battle_info_file),'utf8',function (err) {
+		if (err) {
+			console.log("An error occured while writing JSON Object to File.");
+			return console.log(err);
+		}
+		console.log("JSON file has been saved.");
+	});
 }
 
 // Function for creating output after bets are closed
@@ -37,7 +67,7 @@ function embed_closed(){
 				{ name: 'VS', value: '\u200B', inline: true },
 				{ name: player2_string, value: 'Player 2', inline: true },
 				{ name: '\u200B', value: parseFloat(p1_percent).toFixed(2) + '%', inline: true },
-				{ name: '\u200B', value: '\u200B', inline: true },
+				{ name: '\u200B', value: embed_spacer, inline: true },
 				{ name: '\u200B', value: parseFloat(p2_percent).toFixed(2) + '%', inline: true },
 				{ name: '\u200B', value: '\u200B' },
 				{ name: 'The favourite is:  ', value: winning_player},
@@ -57,7 +87,7 @@ function embed_placebet(){
 	{ name: 'VS', value: '\u200B', inline: true },
 	{ name: player2_string, value: 'Player 2', inline: true },
 	{ name: '\u200B', value: parseFloat(p1_percent).toFixed(2) + '%', inline: true },
-	{ name: '\u200B', value: '\u200B', inline: true },
+	{ name: '\u200B', value: embed_spacer, inline: true },
 	{ name: '\u200B', value: parseFloat(p2_percent).toFixed(2) + '%', inline: true },
 	{ name: '\u200B', value: '\u200B' },
 	{ name: 'Total Bets: ', value: total_votes.toString()},
@@ -118,7 +148,7 @@ module.exports = {
 			{ name: 'Vote for who you think will win', value: 'Betting open'},
 			{ name: '\u200B', value: '\u200B' },
 			{ name: player1_string, value: 'Player 1', inline: true },
-			{ name: 'VS', value: '\u200B', inline: true },
+			{ name: 'VS', value: embed_spacer, inline: true },
 			{ name: player2_string, value: 'Player 2', inline: true },
 			{ name: '\u200B', value: '\u200B' },
 			{ name: 'Betting closes at ', value: newDateObj.toLocaleString() },
@@ -131,7 +161,8 @@ module.exports = {
 					.setStyle(ButtonStyle.Primary),
 				new ButtonBuilder()
 					.setCustomId('btn_refresh')
-					.setLabel('| Refresh |')
+					.setLabel('| ----- |')
+					.setDisabled(true)
 					.setStyle(ButtonStyle.Secondary),
 				new ButtonBuilder()
 					.setCustomId('btn_p2vote')

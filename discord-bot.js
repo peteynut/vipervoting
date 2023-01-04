@@ -15,6 +15,25 @@ const commandsPath = path.join(__dirname, 'commands');
 const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
 
+// Variables for battle
+var player1
+var player2
+var winner
+var bypercent
+var battle_info_file
+
+// Function for reading battleinfo from file
+function get_battlefile(){
+	battle_info_file = fs.readFileSync('./files/battle_info_file.json',
+            {encoding:'utf8', flag:'r'});
+	battle_info_file = JSON.parse(battle_info_file)
+
+	console.log(battle_info_file.winner);
+
+	return(battle_info_file);
+}
+
+
 for (const file of commandFiles) {
 	const filePath = path.join(commandsPath, file);
 	const command = require(filePath);
@@ -48,15 +67,14 @@ client.on(Events.InteractionCreate, async interaction => {
 		console.log(timeleft)
 
 		var downloadTimer = setInterval(function(){
-		if(timeleft <= 0){
+		if(timeleft <= -1){
+			battle_info_file = get_battlefile()
 			clearInterval(downloadTimer);
-			var message_winner = 'The votes have closed, hit the refresh button to see the outcome!'
+			console.log(battle_info_file.winner)
+			var message_winner = 'Votes Closed! The favourite is ' + battle_info_file.winner + ' with ' + battle_info_file.bypercent + '% of the votes'
 			client.channels.cache.get('1059748966616547371').send(message_winner)
-			// update interaction, disable/remove buttons and update embed with results
+
 		} 
-		else{
-			console.log(timeleft);
-		}
 		timeleft -= 1;
 		}, 1000);
 	}
