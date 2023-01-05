@@ -15,23 +15,6 @@ const commandsPath = path.join(__dirname, 'commands');
 const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
 
-// Variables for battle
-var player1
-var player2
-var winner
-var bypercent
-var battle_info_file
-
-// Function for reading battleinfo from file
-function get_battlefile(){
-	battle_info_file = fs.readFileSync('./files/battle_info_file.json',
-            {encoding:'utf8', flag:'r'});
-	battle_info_file = JSON.parse(battle_info_file)
-	
-	return(battle_info_file);
-}
-
-
 for (const file of commandFiles) {
 	const filePath = path.join(commandsPath, file);
 	const command = require(filePath);
