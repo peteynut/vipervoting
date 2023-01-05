@@ -1,5 +1,6 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const fs = require('fs')
+const fs = require('fs');
+const { fileURLToPath } = require('url');
 
 var player1_string = 'Player 1'
 var player2_string = 'Player 2'
@@ -19,32 +20,41 @@ var battle_info_file ={
 	"winner": 'Draw',
 	"bypercent": 50,}
 var bets_open = false
-var embed_spacer = "|------VS------|"
+var embed_spacer = "|-----VS-----|"
 var update_embed
 const embed_colour = 'DarkGreen'
-var p1_vote_display = '00000'
-var p2_vote_display = '00000'
+var p1_vote_display = ''
+var p2_vote_display = ''
+var embed_width_image = 'https://i.ibb.co/b7Hxj7t/500x1-00000000.png'
+
+
+// internal toggle for turning on or off the slider bar
+var betting_bar = false
 
 function bet_calculate (p1,p2){
 	var total_percent = p1 + p2
 	if(total_percent == 0){
 		p1_percent = 50
 		p2_percent = 50
-		p1_vote_display = '00000'
-		p2_vote_display = '00000'
 	}
-	else{
-		p1_percent = p1 / total_percent * 100;
-		p2_percent = p2 / total_percent * 100;
-		p1_vote_display = ''
-		for(let i= 1;i <= Math.floor(p1_percent/10);i++){
-			p1_vote_display+='0'
-		}
-		p2_vote_display = ''
-		for(let i= 1;i <= Math.floor(p2_percent/10);i++){
-			p2_vote_display+='0'
-		}
+	
+	p1_percent = p1 / total_percent * 100;
+	p2_percent = p2 / total_percent * 100;
+	p1_vote_display = ''
+	for(let i= 1;i <= Math.floor(p1_percent/10);i++){
+		p1_vote_display+='0'
 	}
+	for(let i= 1;i <= (10-Math.floor(p1_percent/10));i++){
+		p1_vote_display+=''
+	}
+	p2_vote_display = ''
+	for(let i= 1;i <= Math.floor(p2_percent/10);i++){
+		p2_vote_display+='0'
+	}
+	for(let i= 1;i <= (10-Math.floor(p2_percent/10));i++){
+		p2_vote_display+=''
+	}
+
 	if(p1_percent == p2_percent){
 		winning_player = "Draw"
 		winning_percentage = 50
@@ -58,8 +68,6 @@ function bet_calculate (p1,p2){
 		winning_percentage = p1_percent
 	}
 	update_battlefile();
-	console.log(p1_vote_display)
-	console.log(p2_vote_display)
 	return(p1_percent,p2_percent);
 }
 
@@ -80,47 +88,37 @@ function update_battlefile(){
 	});
 }
 
-// Function for creating output after bets are closed
+// Embed builder for votes closed
 function embed_closed(){
 	var close_embed = new EmbedBuilder()
-			.setColor(embed_colour)
-			.setTitle('Vote Closed')
-			.addFields(
-				{ name: player1_string, value: 'Player 1', inline: true },
-				{ name: '\u200B', value: '\u200B', inline: true },
-				{ name: player2_string, value: 'Player 2', inline: true },
-				{ name: '\u200B', value: parseFloat(p1_percent).toFixed(2) + '%', inline: true },
-				{ name: '\u200B', value: embed_spacer, inline: true },
-				{ name: '\u200B', value: parseFloat(p2_percent).toFixed(2) + '%', inline: true },
-				{ name: '\u200B', value: '\u200B' },
-				{ name: 'The favourite is:  ', value: winning_player},
-				{ name: '\u200B', value: '\u200B' })
-				return(close_embed);
-}
-
-// Function for creating output from a bet placement
-function embed_placebet(){
-	total_votes = player1_votes + player2_votes;
-	var update_embed = new EmbedBuilder()
 	.setColor(embed_colour)
-	.setTitle('Viper Voting - in progress')
+	.setTitle('Vote Closed')
+	.setImage(embed_width_image)
 	.addFields(
-	{ name: '\u200B', value: 'Betting open'},
-	{ name: player1_string, value: 'Player 1', inline: true },
-	{ name: '\u200B', value: '\u200B', inline: true },
-	{ name: player2_string, value: 'Player 2', inline: true },
-	{ name: '\u200B', value: parseFloat(p1_percent).toFixed(2) + '%', inline: true },
-	{ name: '\u200B', value: embed_spacer, inline: true },
-	{ name: '\u200B', value: parseFloat(p2_percent).toFixed(2) + '%', inline: true },
-	{ name: '\u200B', value: '\u200B' },
-	{ name: 'Total Bets: ', value: total_votes.toString()},
-	{ name: '\u200B', value: '\u200B' },
-	{ name: 'Time remaining ', value: timeleft.toString() + ' seconds'})
-	return(update_embed)
+		{ name: player1_string, value: 'Player 1', inline: true },
+		{ name: '\u200B', value: '\u200B', inline: true },
+		{ name: player2_string, value: 'Player 2', inline: true },
+		{ name: '\u200B', value: parseFloat(p1_percent).toFixed(2) + '%', inline: true },
+		{ name: '\u200B', value: embed_spacer, inline: true },
+		{ name: '\u200B', value: parseFloat(p2_percent).toFixed(2) + '%', inline: true },
+		{ name: '\u200B', value: '\u200B' },
+		{ name: 'The favourite is:  ', value: winning_player},
+		{ name: '\u200B', value: '\u200B' })
+		return(close_embed);
+		
 }
 
+// Embed builder for voting in progress
 function embed_update(){
 	total_votes = player1_votes + player2_votes;
+	if(betting_bar == true){
+		var p1_embed_string = parseFloat(p1_percent).toFixed(2) + '% \n' + p1_vote_display + '\n|-------------|'
+		var p2_embed_string = parseFloat(p2_percent).toFixed(2) + '% \n' + p2_vote_display + '\n|-------------|'
+	}
+	else{
+		var p1_embed_string = parseFloat(p1_percent).toFixed(2) + '%'
+		var p2_embed_string = parseFloat(p2_percent).toFixed(2) + '%'
+	}
 	var update_embed = new EmbedBuilder()
 	.setColor(embed_colour)
 	.setTitle('Viper Voting - in progress')
@@ -129,29 +127,31 @@ function embed_update(){
 	{ name: player1_string, value: 'Player 1', inline: true },
 	{ name: '\u200B', value: '\u200B', inline: true },
 	{ name: player2_string, value: 'Player 2', inline: true },
-	{ name: '\u200B', value: parseFloat(p1_percent).toFixed(2) + '%', inline: true },
+	{ name: '\u200B', value: p1_embed_string, inline: true },
 	{ name: '\u200B', value: embed_spacer, inline: true },
-	{ name: '\u200B', value: parseFloat(p2_percent).toFixed(2) + '%', inline: true },
+	{ name: '\u200B', value: p2_embed_string, inline: true },
 	{ name: '\u200B', value: '\u200B' },
 	{ name: 'Total Bets: ', value: total_votes.toString()},
 	{ name: '\u200B', value: '\u200B' },
 	{ name: 'Time remaining ', value: timeleft.toString() + ' seconds'})
+	.setImage(embed_width_image)
 	return(update_embed)
 }
-
+// Embed builder for pre voting
 function embed_prebet(){
 	const bet_embed = new EmbedBuilder()
-		.setColor(embed_colour)
-		.setTitle('Viper Voting')
-		.addFields(
-			{ name: 'Vote for who you think will win', value: 'Betting open'},
-			{ name: '\u200B', value: '\u200B' },
-			{ name: player1_string, value: 'Player 1', inline: true },
-			{ name: '\u200B', value: embed_spacer, inline: true },
-			{ name: player2_string, value: 'Player 2', inline: true },
-			{ name: '\u200B', value: '\u200B' },
-			{ name: 'Time remaining ', value: timeleft.toString() + ' seconds'},
-		)
+	.setColor(embed_colour)
+	.setTitle('Viper Voting')
+	.addFields(
+		{ name: 'Vote for who you think will win', value: 'Betting open'},
+		{ name: '\u200B', value: '\u200B' },
+		{ name: player1_string, value: 'Player 1', inline: true },
+		{ name: '\u200B', value: embed_spacer, inline: true },
+		{ name: player2_string, value: 'Player 2', inline: true },
+		{ name: '\u200B', value: '\u200B' },
+		{ name: 'Time remaining ', value: timeleft.toString() + ' seconds'},
+	)
+	.setImage(embed_width_image)
 	return(bet_embed)
 }
 
@@ -161,7 +161,7 @@ function close_bets(interaction){
 	.addComponents(
 		new ButtonBuilder()
 			.setCustomId('btn_p1vote')
-			.setLabel('Vote P1')
+			.setLabel(player1_string)
 			.setDisabled(true)
 			.setStyle(ButtonStyle.Primary),
 		new ButtonBuilder()
@@ -171,7 +171,7 @@ function close_bets(interaction){
 			.setStyle(ButtonStyle.Secondary),
 		new ButtonBuilder()
 			.setCustomId('btn_p2vote')
-			.setLabel('Vote P2')
+			.setLabel(player2_string)
 			.setDisabled(true)
 			.setStyle(ButtonStyle.Danger),
 	);
@@ -246,7 +246,7 @@ module.exports = {
 			.addComponents(
 				new ButtonBuilder()
 					.setCustomId('btn_p1vote')
-					.setLabel('Vote P1')
+					.setLabel('Vote ' + player1_string)
 					.setStyle(ButtonStyle.Primary),
 				new ButtonBuilder()
 					.setCustomId('btn_refresh')
@@ -255,7 +255,7 @@ module.exports = {
 					.setStyle(ButtonStyle.Secondary),
 				new ButtonBuilder()
 					.setCustomId('btn_p2vote')
-					.setLabel('Vote P2')
+					.setLabel('Vote ' + player2_string)
 					.setStyle(ButtonStyle.Danger),
 			);
 
@@ -269,7 +269,7 @@ module.exports = {
 		// Check for refresh button
 		if (player_option == 0){
 			bet_calculate(player1_votes,player2_votes)
-			update_embed = new embed_placebet();
+			update_embed = new embed_update();
 			await interaction.update({ embeds: [update_embed]})
 			return;
 		}
@@ -281,8 +281,9 @@ module.exports = {
 
 	}
 	else{
-		// Add to list of voters then continue (temp disabled)
+		// Add user id to list of voters then continue (temp disabled)
 		//voters.push(user_id);
+
 		if(timeleft<=1)
 		{
 		//do closed display
@@ -302,10 +303,8 @@ module.exports = {
 			}
 			bet_calculate(player1_votes,player2_votes)
 			// Update embed display
-			update_embed = new embed_placebet();
-
+			update_embed = new embed_update();
 			await interaction.update({ embeds: [update_embed]})
-			//await interaction.reply({ content: 'Thanks for voting!', ephemeral: true });
 				
 		}
 	}

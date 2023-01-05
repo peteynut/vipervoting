@@ -59,27 +59,6 @@ client.on(Events.InteractionCreate, async interaction => {
 		return;
 	}
 
-	// Set Bet timer if new bet is called
-	if(interaction.commandName == 'bet'){
-		var timeleft = interaction.options.getInteger('time');
-		console.log(timeleft)
-
-		var downloadTimer = setInterval(function(){
-		if(timeleft <= -1){
-			// After battle countdown, display winning message
-			battle_info_file = get_battlefile()
-			clearInterval(downloadTimer);
-
-			/* Post vote message, disabled for now.
-			var message_winner = 'Votes Closed! The favourite is ' + battle_info_file.winner + ' with ' + battle_info_file.bypercent + '% of the votes'
-			client.channels.cache.get('1059748966616547371').send(message_winner)
-			*/
-
-		} 
-		timeleft -= 1;
-		}, 1000);
-	}
-
 	try {
 		await command.execute(interaction);
 	} catch (error) {
