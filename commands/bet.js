@@ -89,17 +89,22 @@ function update_battlefile(){
 
 // Embed builder for votes closed
 function embed_closed(){
+	if(betting_bar == true){
+		var p1_embed_string = parseFloat(p1_percent).toFixed(2) + '% \n' + p1_vote_display + '\n|-------------|'
+		var p2_embed_string = parseFloat(p2_percent).toFixed(2) + '% \n' + p2_vote_display + '\n|-------------|'
+	}
+	else{
+		var p1_embed_string = parseFloat(p1_percent).toFixed(2) + '%'
+		var p2_embed_string = parseFloat(p2_percent).toFixed(2) + '%'
+	}
 	var close_embed = new EmbedBuilder()
 	.setColor(embed_colour)
 	.setTitle('Vote Closed')
-	.setImage(embed_width_image)
+	//.setImage(embed_width_image)
 	.addFields(
-		{ name: player1_string, value: 'Player 1', inline: true },
-		{ name: '\u200B', value: '\u200B', inline: true },
-		{ name: player2_string, value: 'Player 2', inline: true },
-		{ name: '\u200B', value: parseFloat(p1_percent).toFixed(2) + '%', inline: true },
+		{ name: player1_string, value: p1_embed_string, inline: true },
 		{ name: '\u200B', value: embed_spacer, inline: true },
-		{ name: '\u200B', value: parseFloat(p2_percent).toFixed(2) + '%', inline: true },
+		{ name: player2_string, value: p2_embed_string, inline: true },
 		{ name: '\u200B', value: '\u200B' },
 		{ name: 'The favourite is:  ', value: winning_player},
 		{ name: '\u200B', value: '\u200B' })
@@ -123,17 +128,14 @@ function embed_update(){
 	.setTitle('Viper Voting - in progress')
 	.addFields(
 	{ name: '\u200B', value: 'Betting open'},
-	{ name: player1_string, value: 'Player 1', inline: true },
-	{ name: '\u200B', value: '\u200B', inline: true },
-	{ name: player2_string, value: 'Player 2', inline: true },
-	{ name: '\u200B', value: p1_embed_string, inline: true },
+	{ name: player1_string, value: p1_embed_string, inline: true },
 	{ name: '\u200B', value: embed_spacer, inline: true },
-	{ name: '\u200B', value: p2_embed_string, inline: true },
+	{ name: player2_string, value: p2_embed_string, inline: true },
 	{ name: '\u200B', value: '\u200B' },
 	{ name: 'Total Bets: ', value: total_votes.toString()},
 	{ name: '\u200B', value: '\u200B' },
 	{ name: 'Time remaining ', value: timeleft.toString() + ' seconds'})
-	.setImage(embed_width_image)
+	//.setImage(embed_width_image)
 	return(update_embed)
 }
 // Embed builder for pre voting
@@ -144,13 +146,13 @@ function embed_prebet(){
 	.addFields(
 		{ name: 'Vote for who you think will win', value: 'Betting open'},
 		{ name: '\u200B', value: '\u200B' },
-		{ name: player1_string, value: 'Player 1', inline: true },
+		{ name: player1_string, value: 'Vote Now', inline: true },
 		{ name: '\u200B', value: embed_spacer, inline: true },
-		{ name: player2_string, value: 'Player 2', inline: true },
+		{ name: player2_string, value: 'Vote Now', inline: true },
 		{ name: '\u200B', value: '\u200B' },
 		{ name: 'Time remaining ', value: timeleft.toString() + ' seconds'},
 	)
-	.setImage(embed_width_image)
+	//.setImage(embed_width_image)
 	return(bet_embed)
 }
 
