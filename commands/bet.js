@@ -219,7 +219,6 @@ module.exports = {
 		player2_string = interaction.options.getString('player2') ?? ' - ';
 		bet_calculate(player1_votes,player2_votes);
 		timeleft = interaction.options.getInteger('time');
-		console.log(timeleft)
 		update_battlefile();
 
 		var downloadTimer = setInterval(function(){
@@ -286,7 +285,6 @@ module.exports = {
 		{
 		//do closed display
 		bet_calculate(player1_votes,player2_votes)
-		console.log('Betting closed time is up!')
 		var close_embed = embed_closed();	
 		await interaction.update({ embeds: [close_embed]})
 		return;
