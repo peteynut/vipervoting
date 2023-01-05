@@ -125,7 +125,7 @@ function embed_update(){
 	}
 	var update_embed = new EmbedBuilder()
 	.setColor(embed_colour)
-	.setTitle('Viper Voting - in progress')
+	.setTitle('Voting in Progress')
 	.addFields(
 	{ name: '\u200B', value: 'Betting open'},
 	{ name: player1_string, value: p1_embed_string, inline: true },
@@ -142,7 +142,7 @@ function embed_update(){
 function embed_prebet(){
 	const bet_embed = new EmbedBuilder()
 	.setColor(embed_colour)
-	.setTitle('Viper Voting')
+	.setTitle('VOTE NOW')
 	.addFields(
 		{ name: 'Vote for who you think will win', value: 'Betting open'},
 		{ name: '\u200B', value: '\u200B' },
