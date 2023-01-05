@@ -31,9 +31,9 @@ var betting_bar = false
 
 function bet_calculate (p1,p2){
 	var total_percent = p1 + p2
-	if(total_percent == 0){
-		p1_percent = 50
-		p2_percent = 50
+	if(total_percent == 0 || !total_percent){
+		p1 = 1
+		p2 = 1
 	}
 	
 	p1_percent = p1 / total_percent * 100;
