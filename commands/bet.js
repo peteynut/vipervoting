@@ -1,13 +1,11 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const fs = require('fs');
-const { fileURLToPath } = require('url');
 
 var player1_string = 'Player 1'
 var player2_string = 'Player 2'
 var player1_votes = 0
 var player2_votes = 0
 var total_votes = 0
-var newDateObj = new Date()
 var timeleft = 0
 var p1_percent = 0
 var p2_percent = 0
@@ -282,7 +280,7 @@ module.exports = {
 	}
 	else{
 		// Add user id to list of voters then continue (temp disabled)
-		//voters.push(user_id);
+		voters.push(user_id);
 
 		if(timeleft<=1)
 		{
