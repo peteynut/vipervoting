@@ -1,4 +1,4 @@
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder, EmbedBuilder} = require('discord.js');
 const fs = require('fs');
 
 var player1_string = 'Player 1'
@@ -31,14 +31,15 @@ var betting_bar = false
 
 function bet_calculate (p1,p2){
 	var total_percent = p1 + p2
-	if(total_percent == 0 || !total_percent){
+	if(total_percent == 0){
+		total_percent = 2
 		p1 = 1
 		p2 = 1
 	}
 	
 	p1_percent = p1 / total_percent * 100;
 	p2_percent = p2 / total_percent * 100;
-	p1_vote_display = ''
+	p1_vote_display = '';
 	for(let i= 1;i <= Math.floor(p1_percent/10);i++){
 		p1_vote_display+='0'
 	}
