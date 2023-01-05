@@ -1,3 +1,4 @@
+/* eslint-disable no-redeclare */
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder, EmbedBuilder} = require('discord.js');
 const fs = require('fs');
 
@@ -17,13 +18,12 @@ var battle_info_file ={
 	"player2": 'Player 2',
 	"winner": 'Draw',
 	"bypercent": 50,}
-var bets_open = false
 var embed_spacer = "|-----VS-----|"
 var update_embed
 const embed_colour = 'DarkGreen'
 var p1_vote_display = ''
 var p2_vote_display = ''
-var embed_width_image = 'https://i.ibb.co/b7Hxj7t/500x1-00000000.png'
+//var embed_width_image = 'https://i.ibb.co/b7Hxj7t/500x1-00000000.png'
 
 
 // internal toggle for turning on or off the slider bar
@@ -214,7 +214,6 @@ module.exports = {
 
 	async execute(interaction) {
 		voters = []
-		bets_open = true
 		player1_votes = 0
 		player2_votes = 0
 		winning_player = 'Draw'
@@ -228,7 +227,6 @@ module.exports = {
 		var downloadTimer = setInterval(function(){
 		if(timeleft <= 0){
 			clearInterval(downloadTimer);
-			bets_open = false
 			close_bets(interaction);
 		} 
 		else if(timeleft <= (interaction.options.getInteger('time')-1)){
@@ -311,16 +309,3 @@ module.exports = {
 	},
     
 };
-/*
-
-
-var timeleft = 0
-Time remaining calculator not used
-var display_time_minutes = Math.floor(timeleft / 60);
-			var display_time_seconds = timeleft - display_time_minutes * 60;
-			var formatted_seconds = ("0" + display_time_seconds).slice(-2)
-			var time_remaining_message = display_time_minutes.toString() + ' : ' + formatted_seconds;
-
-
-
-*/
