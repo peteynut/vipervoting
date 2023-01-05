@@ -1,4 +1,4 @@
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 const fs = require('fs');
 
 var player1_string = 'Player 1'
@@ -190,6 +190,7 @@ function update_bets(interaction){
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('bet')
+		.setDefaultMemberPermissions(0)
 		.setDescription('Start bet for a battle')
 		.addIntegerOption(option =>
 			option.setName('time')
