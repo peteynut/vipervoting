@@ -27,9 +27,7 @@ function get_battlefile(){
 	battle_info_file = fs.readFileSync('./files/battle_info_file.json',
             {encoding:'utf8', flag:'r'});
 	battle_info_file = JSON.parse(battle_info_file)
-
-	console.log(battle_info_file.winner);
-
+	
 	return(battle_info_file);
 }
 
@@ -68,11 +66,14 @@ client.on(Events.InteractionCreate, async interaction => {
 
 		var downloadTimer = setInterval(function(){
 		if(timeleft <= -1){
+			// After battle countdown, display winning message
 			battle_info_file = get_battlefile()
 			clearInterval(downloadTimer);
-			console.log(battle_info_file.winner)
+
+			/* Post vote message, disabled for now.
 			var message_winner = 'Votes Closed! The favourite is ' + battle_info_file.winner + ' with ' + battle_info_file.bypercent + '% of the votes'
 			client.channels.cache.get('1059748966616547371').send(message_winner)
+			*/
 
 		} 
 		timeleft -= 1;
@@ -94,7 +95,8 @@ client.on(Events.InteractionCreate, async interaction => {
 		if(interaction.customId == 'btn_p1vote'){
 			// Call function from bet.js to update player 1 vote
 			try{
-				await updatebet(interaction,1);
+				interaction.user.id
+				await updatebet(interaction,1,interaction.user.id);
 			} catch (error) {
 				console.error(error);
 				await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
@@ -103,15 +105,16 @@ client.on(Events.InteractionCreate, async interaction => {
 		else if(interaction.customId == 'btn_p2vote'){
 			// Call function from bet.js to update player 1 vote
 			try{
-				await updatebet(interaction,2);
+				await updatebet(interaction,2,interaction.user.id);
 			} catch (error) {
 				console.error(error);
 				await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
 			}
 		}
 		else if(interaction.customId == 'btn_refresh'){
+			// Optional middle button to refresh the embed manually
 			try{
-				await updatebet(interaction,0);
+				await updatebet(interaction,0,interaction.user.id);
 			} catch (error) {
 				console.error(error);
 				await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
