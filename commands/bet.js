@@ -27,15 +27,14 @@ var update_embed
 const embed_colour = 'DarkGreen'
 var p1_vote_display = ''
 var p2_vote_display = ''
-//var embed_width_image = 'https://i.ibb.co/b7Hxj7t/500x1-00000000.png'
-var base_path = './vipervoting/files/'
+var base_path = './files/'
 var battle_pic = base_path + 'battle_pic.webp'
 var battle_pic_p1 = base_path + 'p1_default.webp'
 var battle_pic_p2 = base_path + 'p2_default.webp'
 var battle_pic_background = base_path + 'battle_background.webp'
 // internal toggle for turning on or off the slider bar
 var betting_bar = false
-var cloudinary_env = 'set CLOUDINARY_URL=' + process.env.CLOUDINARY_URL
+var cloudinary_env = 'export CLOUDINARY_URL=' + process.env.CLOUDINARY_URL
 var attachment_file_url = 'http://res.cloudinary.com/dgipqso5p/image/upload/v1672971542/battle_pic.webp'
 
 
@@ -298,7 +297,7 @@ module.exports = {
 			var end_bound = player1_string.length - 1;
 			player1_string = player1_string.substring(2,end_bound);
 
-			let serverMembers = client.guilds.cache.get('1060524834028785764').members;
+			let serverMembers = client.guilds.cache.get(process.env.guildid).members;
 			let matchedMember = serverMembers.cache.find(m => m.id === player1_string);
 			
 			battle_pic_p1 = base_path + player1_string + '.webp'
@@ -316,7 +315,7 @@ module.exports = {
 			var end_bound = player2_string.length - 1;
 			player2_string = player2_string.substring(2,end_bound);
 
-			let serverMembers = client.guilds.cache.get('1060524834028785764').members;
+			let serverMembers = client.guilds.cache.get(process.env.guildid).members;
 			let matchedMember = serverMembers.cache.find(m => m.id === player2_string);
 			
 			battle_pic_p2 = base_path + player2_string + '.webp'
