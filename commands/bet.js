@@ -297,7 +297,7 @@ module.exports = {
 			var end_bound = player1_string.length - 1;
 			player1_string = player1_string.substring(2,end_bound);
 
-			let serverMembers = client.guilds.cache.get(process.env.guildid).members;
+			let serverMembers = client.guilds.cache.get(process.env.guildId).members;
 			let matchedMember = serverMembers.cache.find(m => m.id === player1_string);
 			
 			battle_pic_p1 = base_path + player1_string + '.webp'
@@ -315,7 +315,7 @@ module.exports = {
 			var end_bound = player2_string.length - 1;
 			player2_string = player2_string.substring(2,end_bound);
 
-			let serverMembers = client.guilds.cache.get(process.env.guildid).members;
+			let serverMembers = client.guilds.cache.get(process.env.guildId).members;
 			let matchedMember = serverMembers.cache.find(m => m.id === player2_string);
 			
 			battle_pic_p2 = base_path + player2_string + '.webp'
