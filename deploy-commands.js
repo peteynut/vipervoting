@@ -1,5 +1,5 @@
 const { REST, Routes } = require('discord.js');
-require('dotenv').config({path:__dirname+'/.env'});
+require('dotenv').config({path:__dirname+'/.env2'});
 const fs = require('node:fs');
 
 const commands = [];

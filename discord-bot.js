@@ -1,5 +1,5 @@
 // Initialize dotenv
-require('dotenv').config({path:__dirname+'/.env'});
+require('dotenv').config({path:__dirname+'/.env2'});
 
 const fs = require('node:fs');
 const path = require('node:path');
@@ -41,9 +41,11 @@ client.on(Events.InteractionCreate, async interaction => {
 		console.error(`No command matching ${interaction.commandName} was found.`);
 		return;
 	}
-
+	if(interaction.commandName=='bet'){
+		//place holder
+	}
 	try {
-		await command.execute(interaction);
+		await command.execute(interaction,client);
 	} catch (error) {
 		console.error(error);
 		await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
@@ -68,15 +70,6 @@ client.on(Events.InteractionCreate, async interaction => {
 			// Call function from bet.js to update player 1 vote
 			try{
 				await updatebet(interaction,2,interaction.user.id);
-			} catch (error) {
-				console.error(error);
-				await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
-			}
-		}
-		else if(interaction.customId == 'btn_refresh'){
-			// Optional middle button to refresh the embed manually
-			try{
-				await updatebet(interaction,0,interaction.user.id);
 			} catch (error) {
 				console.error(error);
 				await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });

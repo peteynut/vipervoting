@@ -1,9 +1,17 @@
 /* eslint-disable no-redeclare */
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder, EmbedBuilder} = require('discord.js');
-const fs = require('fs');
+// Initialize dotenv
+require('dotenv').config({path:__dirname+'/.env2'});
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder, EmbedBuilder } = require('discord.js')
+const sharp = require('sharp')
+const fs = require('fs')
+const downloadclient = require('https')
+const cloudinary = require('cloudinary').v2
+const { exec } = require("child_process");
 
-var player1_string = 'Player 1'
-var player2_string = 'Player 2'
+
+
+var player1_string
+var player2_string
 var player1_votes = 0
 var player2_votes = 0
 var total_votes = 0
@@ -11,23 +19,57 @@ var timeleft = 0
 var p1_percent = 0
 var p2_percent = 0
 var winning_player = "Draw"
+// eslint-disable-next-line no-unused-vars
 var winning_percentage = "50"
 var voters
-var battle_info_file ={
-	"player1": 'Player 1',
-	"player2": 'Player 2',
-	"winner": 'Draw',
-	"bypercent": 50,}
 var embed_spacer = "|-----VS-----|"
 var update_embed
 const embed_colour = 'DarkGreen'
 var p1_vote_display = ''
 var p2_vote_display = ''
 //var embed_width_image = 'https://i.ibb.co/b7Hxj7t/500x1-00000000.png'
-
-
+var base_path = './vipervoting/files/'
+var battle_pic = base_path + 'battle_pic.webp'
+var battle_pic_p1 = base_path + 'p1_default.webp'
+var battle_pic_p2 = base_path + 'p2_default.webp'
+var battle_pic_background = base_path + 'battle_background.webp'
 // internal toggle for turning on or off the slider bar
 var betting_bar = false
+var cloudinary_env = 'set CLOUDINARY_URL=' + process.env.CLOUDINARY_URL
+var attachment_file_url = 'http://res.cloudinary.com/dgipqso5p/image/upload/v1672971542/battle_pic.webp'
+
+
+cloudinary.config({
+	secure: true
+})
+
+
+exec(cloudinary_env, (error, stdout, stderr) => {
+    if (error) {
+        console.log(`error: ${error.message}`);
+        return;
+    }
+    if (stderr) {
+        console.log(`stderr: ${stderr}`);
+        return;
+    }
+});
+
+const uploadImage = async (imagePath,options) => {
+
+    // Use the uploaded file's name as the asset's public ID and 
+    // allow overwriting the asset with new versions
+    try {
+      // Upload the image
+      const result = await cloudinary.uploader.upload(imagePath, options);
+      console.log(result);
+      return result.public_id;
+    } catch (error) {
+      console.error(error);
+    }
+};
+
+console.log(cloudinary.config())
 
 function bet_calculate (p1,p2){
 	var total_percent = p1 + p2
@@ -66,25 +108,7 @@ function bet_calculate (p1,p2){
 		winning_player = player1_string
 		winning_percentage = p1_percent
 	}
-	update_battlefile();
 	return(p1_percent,p2_percent);
-}
-
-// Function for writing battle info to json file
-function update_battlefile(){
-	battle_info_file = {
-		"player1": player1_string,
-		"player2": player2_string,
-		"winner": winning_player,
-		"bypercent": parseFloat(winning_percentage).toFixed(2),
-	}
-	
-	fs.writeFile('./files/battle_info_file.json',JSON.stringify(battle_info_file),'utf8',function (err) {
-		if (err) {
-			console.log("An error occured while writing JSON Object to File.");
-			return console.log(err);
-		}
-	});
 }
 
 // Embed builder for votes closed
@@ -100,7 +124,7 @@ function embed_closed(){
 	var close_embed = new EmbedBuilder()
 	.setColor(embed_colour)
 	.setTitle('Vote Closed')
-	//.setImage(embed_width_image)
+	.setImage(attachment_file_url)
 	.addFields(
 		{ name: player1_string, value: p1_embed_string, inline: true },
 		{ name: '\u200B', value: embed_spacer, inline: true },
@@ -128,14 +152,15 @@ function embed_update(){
 	.setTitle('Voting in Progress')
 	.addFields(
 	{ name: '\u200B', value: 'Betting open'},
-	{ name: player1_string, value: p1_embed_string, inline: true },
-	{ name: '\u200B', value: embed_spacer, inline: true },
-	{ name: player2_string, value: p2_embed_string, inline: true },
 	{ name: '\u200B', value: '\u200B' },
+	{ name: 'Time remaining ', value: timeleft.toString() + ' seconds'},
 	{ name: 'Total Bets: ', value: total_votes.toString()},
 	{ name: '\u200B', value: '\u200B' },
-	{ name: 'Time remaining ', value: timeleft.toString() + ' seconds'})
-	//.setImage(embed_width_image)
+	{ name: player1_string, value: p1_embed_string, inline: true },
+	{ name: '\u200B', value: embed_spacer, inline: true },
+	{ name: player2_string, value: p2_embed_string, inline: true }
+	)
+	.setImage(attachment_file_url)
 	return(update_embed)
 }
 // Embed builder for pre voting
@@ -146,13 +171,14 @@ function embed_prebet(){
 	.addFields(
 		{ name: 'Vote for who you think will win', value: 'Betting open'},
 		{ name: '\u200B', value: '\u200B' },
+		{ name: 'Time remaining ', value: timeleft.toString() + ' seconds'},
+		{ name: '\u200B', value: '\u200B' },
 		{ name: player1_string, value: 'Vote Now', inline: true },
 		{ name: '\u200B', value: embed_spacer, inline: true },
 		{ name: player2_string, value: 'Vote Now', inline: true },
-		{ name: '\u200B', value: '\u200B' },
-		{ name: 'Time remaining ', value: timeleft.toString() + ' seconds'},
+		
 	)
-	//.setImage(embed_width_image)
+	.setImage(attachment_file_url)
 	return(bet_embed)
 }
 
@@ -190,6 +216,49 @@ function update_bets(interaction){
 	}
 	interaction.editReply({ embeds: [update_embed]})
 }
+
+async function make_battle_pic(){
+	try {
+		sharp.cache(false);
+		if(fs.existsSync(battle_pic_p1) == false){
+			battle_pic_p1 = base_path + 'p1_default.webp'
+		}
+		if(fs.existsSync(battle_pic_p2) == false){
+			battle_pic_p2 = base_path + 'p2_default.webp'
+		}
+		await sharp(battle_pic_background)
+		.composite([{ input: battle_pic_p1, gravity: 'northwest'}, { input: battle_pic_p2, gravity: 'northeast'}])
+		.toFile(base_path + 'battle_pic.webp')
+	}
+	catch(error){
+		console.log(error);
+	}
+	var file_string = player1_string + player2_string + 'battle'
+	file_string = file_string.replace(/\s+/g, '');
+	var options = {
+		public_id: file_string,
+		unique_filename: true,
+		overwrite: true,
+	};
+	uploadImage(battle_pic,options)
+	.then(result=>console.log(result))
+	attachment_file_url = 'http://res.cloudinary.com/dgipqso5p/image/upload/v1672972776/' + file_string + '.webp'
+
+}
+function download_battle_pic(avatar_url,filepath){
+	return new Promise((resolve, reject) =>{
+		downloadclient.get(avatar_url,(res) => {
+			if (res.statusCode === 200){
+				res.pipe(fs.createWriteStream(filepath));
+			}
+			else {
+				// Consume response data to free up memory
+				res.resume();
+				reject(new Error('Request failed with a status code: ${res.statusCode}'));
+			}
+		})
+	})
+}
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('bet')
@@ -212,7 +281,7 @@ module.exports = {
 			.setDescription('Name of Player 2')),
 		
 
-	async execute(interaction) {
+	async execute(interaction,client) {
 		voters = []
 		player1_votes = 0
 		player2_votes = 0
@@ -220,9 +289,48 @@ module.exports = {
 		winning_percentage = 50
 		player1_string = interaction.options.getString('player1') ?? ' - ';
 		player2_string = interaction.options.getString('player2') ?? ' - ';
+		battle_pic_p1 = base_path + 'p1_default.webp'
+		battle_pic_p2 = base_path + 'p2_default.webp'
+		
+		if(interaction.options.getString('player1').startsWith('<@')){
+			// is a user id, user was tagged in input
+			player1_string = interaction.options.getString('player1');
+			var end_bound = player1_string.length - 1;
+			player1_string = player1_string.substring(2,end_bound);
+
+			let serverMembers = client.guilds.cache.get('1060524834028785764').members;
+			let matchedMember = serverMembers.cache.find(m => m.id === player1_string);
+			
+			battle_pic_p1 = base_path + player1_string + '.webp'
+
+			download_battle_pic(matchedMember.user.avatarURL(),base_path + player1_string + '.webp')
+			.then(make_battle_pic())
+			.catch(console.error)		
+			// Get user object, then define variable with username
+			player1_string = matchedMember.displayName;
+			// pull user avatar and create image file
+		}
+		if(interaction.options.getString('player2').startsWith('<@')){
+			// is a user id, user was tagged in input
+			player2_string = interaction.options.getString('player2');
+			var end_bound = player2_string.length - 1;
+			player2_string = player2_string.substring(2,end_bound);
+
+			let serverMembers = client.guilds.cache.get('1060524834028785764').members;
+			let matchedMember = serverMembers.cache.find(m => m.id === player2_string);
+			
+			battle_pic_p2 = base_path + player2_string + '.webp'
+
+			download_battle_pic(matchedMember.user.avatarURL(),base_path + player2_string + '.webp')
+			.then(make_battle_pic())
+			.catch(console.error)		
+			// Get user object, then define variable with username
+			player2_string = matchedMember.displayName;
+			// pull user avatar and create image file
+		}
+		make_battle_pic()
 		bet_calculate(player1_votes,player2_votes);
 		timeleft = interaction.options.getInteger('time');
-		update_battlefile();
 
 		var downloadTimer = setInterval(function(){
 		if(timeleft <= 0){
@@ -238,7 +346,7 @@ module.exports = {
 		}, 1000);
 		
 		
-
+		
 		const bet_embed = embed_prebet();
 
         const row = new ActionRowBuilder()
@@ -258,26 +366,15 @@ module.exports = {
 					.setStyle(ButtonStyle.Danger),
 			);
 
-        await interaction.reply({ embeds: [bet_embed], components: [row] });
+        await interaction.reply({ embeds: [bet_embed], components: [row]});
 	},
 	async updatebet(interaction,player_option,user_id){
 	
 	// Check if user has voted before
 	if(voters.includes(user_id)){
-		
-		// Check for refresh button
-		if (player_option == 0){
-			bet_calculate(player1_votes,player2_votes)
-			update_embed = new embed_update();
-			await interaction.update({ embeds: [update_embed]})
-			return;
-		}
-		else{
-			// Send ephemereal reply noting that vote already cast
-			await interaction.reply({content: 'You have already cast a vote in this battle', ephemeral: true})
-			return;
-		}
-
+		// Send ephemereal reply noting that vote already cast
+		await interaction.reply({content: 'You have already cast a vote in this battle', ephemeral: true})
+		return;
 	}
 	else{
 		// Add user id to list of voters then continue (temp disabled)

@@ -1,4 +1,5 @@
 node_modules
 .env
+.env2
 config.json
 files
