@@ -163,6 +163,7 @@ function embed_closed(){
 // Embed builder for voting in progress
 function embed_update(){
 	total_votes = player1_votes + player2_votes;
+	make_battle_pic()
 	if(betting_bar == true){
 		var p1_embed_string = parseFloat(p1_percent).toFixed(2) + '% \n' + p1_vote_display + '\n|-------------|'
 		var p2_embed_string = parseFloat(p2_percent).toFixed(2) + '% \n' + p2_vote_display + '\n|-------------|'
@@ -244,10 +245,10 @@ function update_bets(interaction){
 async function make_battle_pic(){
 	try {
 		sharp.cache(false);
-		if(fs.existsSync(battle_pic_p1) == false){
+		if(player1_tagged == false){
 			battle_pic_p1 = base_path + 'p1_default.webp'
 		}
-		if(fs.existsSync(battle_pic_p2) == false){
+		if(player2_tagged==false){
 			battle_pic_p2 = base_path + 'p2_default.webp'
 		}
 		await sharp(battle_pic_background)
