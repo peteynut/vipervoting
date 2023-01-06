@@ -12,6 +12,8 @@ const { exec } = require("child_process");
 
 var player1_string
 var player2_string
+var player1_tagged = false
+var player2_tagged = false
 var player1_votes = 0
 var player2_votes = 0
 var total_votes = 0
@@ -19,10 +21,11 @@ var timeleft = 0
 var p1_percent = 0
 var p2_percent = 0
 var winning_player = "Draw"
+var winning_player_id
 // eslint-disable-next-line no-unused-vars
 var winning_percentage = "50"
 var voters
-var embed_spacer = "|-----VS-----|"
+var embed_spacer = "\u200B"
 var update_embed
 const embed_colour = 'DarkGreen'
 var p1_vote_display = ''
@@ -37,6 +40,7 @@ var betting_bar = false
 var cloudinary_env = 'export CLOUDINARY_URL=' + process.env.CLOUDINARY_URL
 var attachment_file_url = 'http://res.cloudinary.com/dgipqso5p/image/upload/v1672971542/battle_pic.webp'
 var image_uploaded = false
+let image_file_urls = []
 
 
 cloudinary.config({
@@ -61,12 +65,28 @@ const uploadImage = async (imagePath,options) => {
     // allow overwriting the asset with new versions
     try {
       // Upload the image
-      const result = await cloudinary.uploader.upload(imagePath, options);
-      console.log(result);
-      return result.public_id;
+    const result = await cloudinary.uploader.upload(imagePath, options);
+		attachment_file_url = result.secure_url
+		image_file_urls[0] = result.secure_url
+      return result.secure_url;
     } catch (error) {
       console.error(error);
     }
+};
+const uploadfinal_Image = async (imagePath,options,pid) => {
+
+    // Use the uploaded file's name as the asset's public ID and 
+    // allow overwriting the asset with new versions
+try {
+      // Upload the image
+	const result = await cloudinary.uploader.upload(imagePath, options);
+		
+	image_file_urls[pid] = result.secure_url
+		
+      return result.secure_url;
+} catch (error) {
+      console.error(error);
+}
 };
 
 console.log(cloudinary.config())
@@ -99,13 +119,16 @@ function bet_calculate (p1,p2){
 	if(p1_percent == p2_percent){
 		winning_player = "Draw"
 		winning_percentage = 50
+		winning_player_id = 0
 	}
 	else if(p1_percent <= p2_percent){
 		winning_player = player2_string
+		winning_player_id = 2
 		winning_percentage = p2_percent
 	}
 	else if(p2_percent <= p1_percent){
 		winning_player = player1_string
+		winning_player_id = 1
 		winning_percentage = p1_percent
 	}
 	return(p1_percent,p2_percent);
@@ -121,10 +144,11 @@ function embed_closed(){
 		var p1_embed_string = parseFloat(p1_percent).toFixed(2) + '%'
 		var p2_embed_string = parseFloat(p2_percent).toFixed(2) + '%'
 	}
+	
 	var close_embed = new EmbedBuilder()
 	.setColor(embed_colour)
 	.setTitle('Vote Closed')
-	.setImage(attachment_file_url)
+	.setImage(image_file_urls[winning_player_id])
 	.addFields(
 		{ name: player1_string, value: p1_embed_string, inline: true },
 		{ name: '\u200B', value: embed_spacer, inline: true },
@@ -193,7 +217,7 @@ function close_bets(interaction){
 			.setStyle(ButtonStyle.Primary),
 		new ButtonBuilder()
 			.setCustomId('btn_refresh')
-			.setLabel('| ----- |')
+			.setLabel('| ------------ |')
 			.setDisabled(true)
 			.setStyle(ButtonStyle.Secondary),
 		new ButtonBuilder()
@@ -241,12 +265,38 @@ async function make_battle_pic(){
 		overwrite: true,
 	};
 	if(image_uploaded==false){
+		
 		uploadImage(battle_pic,options)
-		.then(result=>console.log(result))
+		.then(result=>result.secure_url)
 		image_uploaded=true
+		
 	}
-	attachment_file_url = 'http://res.cloudinary.com/dgipqso5p/image/upload/v1672972776/' + file_string + '.webp'
+	
+}
+async function upload_pics(){
+	
+	
+	var file_string = player1_string + 'battle'
+	file_string = file_string.replace(/\s+/g, '');
+	var options = {
+		public_id: file_string,
+		unique_filename: true,
+		overwrite: true,
+	};
+	uploadfinal_Image(battle_pic_p1,options,1)
+	.then()
 
+
+	var file_string = player2_string + 'battle'
+	file_string = file_string.replace(/\s+/g, '');
+	var options = {
+		public_id: file_string,
+		unique_filename: true,
+		overwrite: true,
+	};
+	uploadfinal_Image(battle_pic_p2,options,2)
+	.then()
+	
 }
 function download_battle_pic(avatar_url,filepath){
 	return new Promise((resolve, reject) =>{
@@ -286,10 +336,14 @@ module.exports = {
 
 	async execute(interaction,client) {
 		voters = []
+		image_file_urls = []
 		player1_votes = 0
 		player2_votes = 0
+		player1_tagged = false
+		player2_tagged = false
 		winning_player = 'Draw'
 		winning_percentage = 50
+		winning_player_id = 0
 		player1_string = interaction.options.getString('player1') ?? ' - ';
 		player2_string = interaction.options.getString('player2') ?? ' - ';
 		battle_pic_p1 = base_path + 'p1_default.webp'
@@ -298,6 +352,7 @@ module.exports = {
 		
 		if(interaction.options.getString('player1').startsWith('<@')){
 			// is a user id, user was tagged in input
+			player1_tagged = true
 			player1_string = interaction.options.getString('player1');
 			var end_bound = player1_string.length - 1;
 			player1_string = player1_string.substring(2,end_bound);
@@ -316,6 +371,7 @@ module.exports = {
 		}
 		if(interaction.options.getString('player2').startsWith('<@')){
 			// is a user id, user was tagged in input
+			player2_tagged = true
 			player2_string = interaction.options.getString('player2');
 			var end_bound = player2_string.length - 1;
 			player2_string = player2_string.substring(2,end_bound);
@@ -333,6 +389,7 @@ module.exports = {
 			// pull user avatar and create image file
 		}
 		make_battle_pic()
+		upload_pics()
 		bet_calculate(player1_votes,player2_votes);
 		timeleft = interaction.options.getInteger('time');
 
@@ -345,6 +402,7 @@ module.exports = {
 			// Update embed for timer, check if votes counted for different displays
 			total_votes = player1_votes + player2_votes;
 			update_bets(interaction);
+
 		}
 		timeleft -= 1;
 		}, 1000);
@@ -361,7 +419,7 @@ module.exports = {
 					.setStyle(ButtonStyle.Primary),
 				new ButtonBuilder()
 					.setCustomId('btn_refresh')
-					.setLabel('| ----- |')
+					.setLabel('| ------------ |')
 					.setDisabled(true)
 					.setStyle(ButtonStyle.Secondary),
 				new ButtonBuilder()
