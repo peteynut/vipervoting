@@ -36,6 +36,7 @@ var battle_pic_background = base_path + 'battle_background.webp'
 var betting_bar = false
 var cloudinary_env = 'export CLOUDINARY_URL=' + process.env.CLOUDINARY_URL
 var attachment_file_url = 'http://res.cloudinary.com/dgipqso5p/image/upload/v1672971542/battle_pic.webp'
+var image_uploaded = false
 
 
 cloudinary.config({
@@ -239,8 +240,11 @@ async function make_battle_pic(){
 		unique_filename: true,
 		overwrite: true,
 	};
-	uploadImage(battle_pic,options)
-	.then(result=>console.log(result))
+	if(image_uploaded==false){
+		uploadImage(battle_pic,options)
+		.then(result=>console.log(result))
+		image_uploaded=true
+	}
 	attachment_file_url = 'http://res.cloudinary.com/dgipqso5p/image/upload/v1672972776/' + file_string + '.webp'
 
 }
@@ -290,6 +294,7 @@ module.exports = {
 		player2_string = interaction.options.getString('player2') ?? ' - ';
 		battle_pic_p1 = base_path + 'p1_default.webp'
 		battle_pic_p2 = base_path + 'p2_default.webp'
+		image_uploaded = false
 		
 		if(interaction.options.getString('player1').startsWith('<@')){
 			// is a user id, user was tagged in input
