@@ -13,7 +13,7 @@ jobs:
 - deployment: VMDeploy
   displayName: Web deploy
   environment:
-    name: server-vipervoting
+    name: prod_bot_env
     resourceType: VirtualMachine
   strategy:
     runOnce:
