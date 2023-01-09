@@ -24,7 +24,7 @@ const embed_colour = 'DarkGreen'
 var p1_vote_display = ''
 var p2_vote_display = ''
 //var embed_width_image = 'https://i.ibb.co/b7Hxj7t/500x1-00000000.png'
-
+// testing for auto update
 
 // internal toggle for turning on or off the slider bar
 var betting_bar = false
