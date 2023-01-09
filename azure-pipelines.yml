@@ -15,5 +15,6 @@ steps:
     script: |
       dir
       git pull
+      echo $(SSH_KEY)
       npm install
     workingDirectory: '/home/a_psheppard/coding/vipervoting'
