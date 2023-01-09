@@ -8,16 +8,11 @@ trigger:
 
 pool:
   Default
-
-jobs:
-- deployment: VMDeploy
-  displayName: Web deploy
-  environment:
-    name: prod_bot_env
-    resourceType: VirtualMachine
-  strategy:
-    runOnce:
-      deploy:
-        steps:
-        - script: echo here is where I deploy to the VM
-        
+  
+steps:
+- task: CmdLine@2
+  inputs:
+    script: |
+      git pull
+      npm install
+    workingDirectory: '~/coding/vipervoting'
