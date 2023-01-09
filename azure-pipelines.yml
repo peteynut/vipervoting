@@ -15,4 +15,4 @@ steps:
     script: |
       git pull
       npm install
-    workingDirectory: '~/coding/vipervoting'
+    workingDirectory: '/home/a_psheppard/coding/vipervoting'
