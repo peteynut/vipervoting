@@ -7,7 +7,7 @@ trigger:
 - main
 
 pool:
-  server-vipervoting
+  Default
 
 steps:
 - task: NodeTool@0
