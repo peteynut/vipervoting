@@ -75,8 +75,6 @@ try {
 }
 };
 
-console.log(cloudinary.config())
-
 function bet_calculate (p1,p2){
 	var total_percent = p1 + p2
 	if(total_percent == 0){
