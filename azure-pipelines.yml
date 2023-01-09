@@ -14,8 +14,3 @@ steps:
   inputs:
     versionSpec: '18.x'
   displayName: 'Select node version'
-
-- script: |
-    cd ~/coding/vipervoting
-    git pull
-  displayName: 'git pull current'
