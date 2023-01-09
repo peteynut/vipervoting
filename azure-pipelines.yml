@@ -13,6 +13,7 @@ steps:
 - task: CmdLine@2
   inputs:
     script: |
+      dir
       git pull
       npm install
     workingDirectory: '/home/a_psheppard/coding/vipervoting'
