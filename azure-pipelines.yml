@@ -15,4 +15,5 @@ steps:
     script: |
       git pull
       npm install
+      pm2 restart all
     workingDirectory: '/home/a_psheppard/coding/vipervoting'
