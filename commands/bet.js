@@ -6,7 +6,6 @@ const sharp = require('sharp')
 const fs = require('fs')
 const downloadclient = require('https')
 const cloudinary = require('cloudinary').v2
-const { exec } = require("child_process");
 
 
 
@@ -37,7 +36,6 @@ var battle_pic_p2 = base_path + 'p2_default.webp'
 var battle_pic_background = base_path + 'battle_background.webp'
 // internal toggle for turning on or off the slider bar
 var betting_bar = false
-var cloudinary_env = 'export CLOUDINARY_URL=' + process.env.CLOUDINARY_URL
 var attachment_file_url = 'http://res.cloudinary.com/dgipqso5p/image/upload/v1672971542/battle_pic.webp'
 var image_uploaded = false
 let image_file_urls = []
@@ -46,18 +44,6 @@ let image_file_urls = []
 cloudinary.config({
 	secure: true
 })
-
-
-exec(cloudinary_env, (error, stdout, stderr) => {
-    if (error) {
-        console.log(`error: ${error.message}`);
-        return;
-    }
-    if (stderr) {
-        console.log(`stderr: ${stderr}`);
-        return;
-    }
-});
 
 const uploadImage = async (imagePath,options) => {
 
