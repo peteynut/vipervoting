@@ -65,7 +65,8 @@ client.on(Events.InteractionCreate, async interaction => {
 	let serverMembers = client.guilds.cache.get(process.env.guildId).members;
 	let matchedMember = serverMembers.cache.find(m => m.id === user_id);
 		await interaction.reply({content: 'Added ' + matchedMember.displayName + ' to priveledged users.', ephemeral: true});
-		admins.set(user_id,1)
+		admins.set(user_id,1);
+		admins.save();
 	}
 	else if (interaction.options.getSubcommand() === 'remove_admin_user'){
 		let user_id = interaction.options.getUser('target').id
@@ -199,7 +200,7 @@ client.on(Events.InteractionCreate, async interaction => {
 		}
 		else if (interaction.customId === 'btn_p2bet_payout') {
 			// Do a check for whether user has permission
-			if (admins.includes(interaction.user.id)){
+			if (admins.get(interaction.user.id)=== 1){
 				// User has permission
 				let id_dict = await post_winner(interaction,2);
 				payout(id_dict);
@@ -312,7 +313,7 @@ async function addBalance(id, amount) {
 		const newUser = await Users.create({ user_id: id, balance: amount + 200 });
 		currency.set(id, newUser);
 
-		return newUser;
+		return newUser.save();
 	}
 }
 
