@@ -50,9 +50,7 @@ client.on(Events.InteractionCreate, async interaction => {
 	if (!interaction.isChatInputCommand()) return;
 
 	const command = interaction.client.commands.get(interaction.commandName);
-	let user_id = interaction.options.getUser('target').id
-	let serverMembers = client.guilds.cache.get(process.env.guildId).members;
-	let matchedMember = serverMembers.cache.find(m => m.id === user_id);
+	
 
 	if (!command) {
 		console.error(`No command matching ${interaction.commandName} was found.`);
@@ -63,19 +61,38 @@ client.on(Events.InteractionCreate, async interaction => {
 		bet_submitted = []
 	}
 	else if (interaction.options.getSubcommand() === 'add_admin_user') {
+		let user_id = interaction.options.getUser('target').id
+	let serverMembers = client.guilds.cache.get(process.env.guildId).members;
+	let matchedMember = serverMembers.cache.find(m => m.id === user_id);
 		await interaction.reply({content: 'Added ' + matchedMember.displayName + ' to priveledged users.', ephemeral: true});
+		admins.set(user_id,1)
 	}
 	else if (interaction.options.getSubcommand() === 'remove_admin_user'){
+		let user_id = interaction.options.getUser('target').id
+	let serverMembers = client.guilds.cache.get(process.env.guildId).members;
+	let matchedMember = serverMembers.cache.find(m => m.id === user_id);
 		await interaction.reply({content: 'Removed ' + matchedMember.displayName + ' from priveledged users.', ephemeral: true});
+		admins.delete(user_id)
 	}
 	else if (interaction.options.getSubcommand() === 'setbalance'){
+		let user_id = interaction.options.getUser('target').id
+	let serverMembers = client.guilds.cache.get(process.env.guildId).members;
+	let matchedMember = serverMembers.cache.find(m => m.id === user_id);
 		let old_balance = getBalance(user_id);
+		addBalance(user_id,old_balance*-1)
 		let new_balance = interaction.options.getInteger('amount');
-		await interaction.reply({content: 'Set ' + matchedMember.displayName + ' coin balance from ' + old_balance + 'to ' + new_balance, ephemeral: true});
+		addBalance(user_id,new_balance)
+		await interaction.reply({content: 'Set ' + matchedMember.displayName + ' coin balance from ' + old_balance + ' to ' + new_balance, ephemeral: true});
 	}
 	else if (interaction.options.getSubcommand() === 'removeuser'){
+		let user_id = interaction.options.getUser('target').id
+	let serverMembers = client.guilds.cache.get(process.env.guildId).members;
+	let matchedMember = serverMembers.cache.find(m => m.id === user_id);
+		currency.delete(user_id);
 		await interaction.reply({content: 'Removed ' + matchedMember.displayName + ' from currency database.', ephemeral: true});
+	}
 	try {
+
 		await command.execute(interaction,client);
 	} catch (error) {
 		console.error(error);
@@ -159,8 +176,7 @@ client.on(Events.InteractionCreate, async interaction => {
 		}
 		else if (interaction.customId === 'btn_draw_payout') {
 			// Do a check for whether user has permission
-			let test = 1
-			if (test === 1){
+			if (admins.includes(interaction.user.id)){
 				// User has permission
 				let id_dict = await post_winner(interaction,0);
 				payout(id_dict);
@@ -171,8 +187,8 @@ client.on(Events.InteractionCreate, async interaction => {
 		}	
 		else if (interaction.customId === 'btn_p1bet_payout') {
 			// Do a check for whether user has permission
-			let test = 1
-			if (test === 1){
+			
+			if (admins.includes(interaction.user.id)){
 				// User has permission
 				let id_dict = await post_winner(interaction,1);
 				payout(id_dict);
@@ -183,8 +199,7 @@ client.on(Events.InteractionCreate, async interaction => {
 		}
 		else if (interaction.customId === 'btn_p2bet_payout') {
 			// Do a check for whether user has permission
-			let test = 1
-			if (test === 1){
+			if (admins.includes(interaction.user.id)){
 				// User has permission
 				let id_dict = await post_winner(interaction,2);
 				payout(id_dict);
@@ -207,10 +222,8 @@ client.on(Events.InteractionCreate, async interaction => {
 		if(response <= 0){
 			// Someones trying to break the system
 			let newbalance =  + response;
-			console.log(newbalance)
 			if(newbalance <= 0){
 			newbalance = 0
-			console.log(newbalance)
 			}
 			addBalance(interaction.user.id, response)
 
@@ -243,7 +256,6 @@ client.on(Events.InteractionCreate, async interaction => {
 		if(response <= 0){
 			// Someones trying to break the system
 			let newbalance =  + response;
-			console.log(newbalance)
 			if(newbalance <= 0){
 			newbalance = 0
 			}
@@ -287,31 +299,33 @@ async function payout(id_dict){
 }
 async function addBalance(id, amount) {
 	// Add currency
-	const user = currency.get(id);
 
-	if (user) {
-		user.balance += Number(amount);
-		return user.save();
+	try{
+		const user = await currency.get(id)
+		if (user) {
+			user.balance += Number(amount);
+			return user.save();
+			
+		}
 	}
+	catch{
+		const newUser = await Users.create({ user_id: id, balance: amount + 200 });
+		currency.set(id, newUser);
 
-	const newUser = await Users.create({ user_id: id, balance: amount + 200 });
-	currency.set(id, newUser);
-
-	return newUser;
+		return newUser;
+	}
 }
 
 function getBalance(id) {
 	const user = currency.get(id);
 	console.log(user)
 	if (user) {
-		console.log('recognised user')
 		return user ? user.balance : 0;
 	}
 	
 	else{
-		console.log('created record')
 		const newUser = Users.create({ user_id: id, balance: 200 });
-		currency.set(id, newUser);
+		currency.set(id, newUser.balance);
 		return newUser ? newUser.balance : 0;
 	}
 	
