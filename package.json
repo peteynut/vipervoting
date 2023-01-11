@@ -5,7 +5,9 @@
     "dotenv": "^16.0.3",
     "image-downloader": "^4.3.0",
     "package": "^1.0.1",
-    "sharp": "^0.31.3"
+    "sequelize": "^6.28.0",
+    "sharp": "^0.31.3",
+    "sqlite3": "^5.1.4"
   },
   "devDependencies": {
     "eslint": "^8.31.0"
