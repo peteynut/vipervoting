@@ -3,4 +3,5 @@ node_modules
 .env2
 config.json
 files
+database.sqlite
 .vscode
