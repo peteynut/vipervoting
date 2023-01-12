@@ -3,7 +3,7 @@ require('dotenv').config({path:__dirname+'/.env2'});
 
 const fs = require('node:fs');
 const path = require('node:path');
-const { Users, CurrencyShop, AdminUsers } = require('./dbObjects.js')
+const { Users, AdminUsers } = require('./dbObjects.js')
 const { Op } = require('sequelize')
 const { Client, Collection, Events, GatewayIntentBits, IntentsBitField, ActionRowBuilder, InteractionType, ModalBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
 const { updatebet } = require('./commands/vote.js');
@@ -65,15 +65,19 @@ client.on(Events.InteractionCreate, async interaction => {
 	let serverMembers = client.guilds.cache.get(process.env.guildId).members;
 	let matchedMember = serverMembers.cache.find(m => m.id === user_id);
 		await interaction.reply({content: 'Added ' + matchedMember.displayName + ' to priveledged users.', ephemeral: true});
-		admins.set(user_id,1);
-		admins.save();
+		AdminUsers.create({ user_id: user_id, priveledge: 1 });
+
 	}
 	else if (interaction.options.getSubcommand() === 'remove_admin_user'){
 		let user_id = interaction.options.getUser('target').id
 	let serverMembers = client.guilds.cache.get(process.env.guildId).members;
 	let matchedMember = serverMembers.cache.find(m => m.id === user_id);
 		await interaction.reply({content: 'Removed ' + matchedMember.displayName + ' from priveledged users.', ephemeral: true});
-		admins.delete(user_id)
+		await AdminUsers.destroy({
+			where: {
+				user_id: user_id
+			}
+		});
 	}
 	else if (interaction.options.getSubcommand() === 'setbalance'){
 		let user_id = interaction.options.getUser('target').id
@@ -89,7 +93,11 @@ client.on(Events.InteractionCreate, async interaction => {
 		let user_id = interaction.options.getUser('target').id
 	let serverMembers = client.guilds.cache.get(process.env.guildId).members;
 	let matchedMember = serverMembers.cache.find(m => m.id === user_id);
-		currency.delete(user_id);
+		await Users.destroy({
+			where: {
+				user_id: user_id
+			}
+		});
 		await interaction.reply({content: 'Removed ' + matchedMember.displayName + ' from currency database.', ephemeral: true});
 	}
 	try {
@@ -132,6 +140,11 @@ client.on(Events.InteractionCreate, async interaction => {
 				await interaction.reply({content: `Your bet has already been submitted.`, ephemeral: true});
 			}
 			else{
+				const user_current_balance = getBalance(interaction.user.id)
+				let display_balance = user_current_balance
+				if(!user_current_balance){
+					display_balance = 200
+				}
 				const modal = new ModalBuilder()
 					.setCustomId('modal_p1bet')
 					.setTitle('Bet Amount')
@@ -139,7 +152,7 @@ client.on(Events.InteractionCreate, async interaction => {
 					new ActionRowBuilder().addComponents(
 					new TextInputBuilder()
 						.setCustomId('bet_input')
-						.setLabel('You have ' + getBalance(interaction.user.id) + ' coins to bet with.')
+						.setLabel('You have ' + display_balance + ' coins to bet with.')
 						.setStyle(TextInputStyle.Short)
 						.setMinLength(1)
 						.setMaxLength(6)
@@ -156,6 +169,12 @@ client.on(Events.InteractionCreate, async interaction => {
 				await interaction.reply({content: `Your bet has already been submitted.`, ephemeral: true});
 			}
 			else{
+				const user_current_balance = getBalance(interaction.user.id)
+				let display_balance = user_current_balance
+				if(!user_current_balance){
+					display_balance = 200
+				}
+				
 				const modal = new ModalBuilder()
 					.setCustomId('modal_p2bet')
 					.setTitle('Bet Amount')
@@ -163,7 +182,7 @@ client.on(Events.InteractionCreate, async interaction => {
 					new ActionRowBuilder().addComponents(
 					new TextInputBuilder()
 						.setCustomId('bet_input')
-						.setLabel('You have ' + getBalance(interaction.user.id) + ' coins to bet with.')
+						.setLabel('You have ' + display_balance + ' coins to bet with.')
 						.setStyle(TextInputStyle.Short)
 						.setMinLength(1)
 						.setMaxLength(6)
@@ -177,7 +196,7 @@ client.on(Events.InteractionCreate, async interaction => {
 		}
 		else if (interaction.customId === 'btn_draw_payout') {
 			// Do a check for whether user has permission
-			if (admins.includes(interaction.user.id)){
+			if (admins.get(interaction.user.id)=== 1){
 				// User has permission
 				let id_dict = await post_winner(interaction,0);
 				payout(id_dict);
@@ -189,7 +208,7 @@ client.on(Events.InteractionCreate, async interaction => {
 		else if (interaction.customId === 'btn_p1bet_payout') {
 			// Do a check for whether user has permission
 			
-			if (admins.includes(interaction.user.id)){
+			if (admins.get(interaction.user.id)=== 1){
 				// User has permission
 				let id_dict = await post_winner(interaction,1);
 				payout(id_dict);
@@ -200,7 +219,7 @@ client.on(Events.InteractionCreate, async interaction => {
 		}
 		else if (interaction.customId === 'btn_p2bet_payout') {
 			// Do a check for whether user has permission
-			if (admins.get(interaction.user.id)=== 1){
+			if (admins.get(interaction.user.id).priveledge === 1){
 				// User has permission
 				let id_dict = await post_winner(interaction,2);
 				payout(id_dict);
@@ -243,8 +262,9 @@ client.on(Events.InteractionCreate, async interaction => {
 				console.error(error);
 				await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
 			}
-			// Temp comment out single bet, for testing
-			// bet_submitted.push(interaction.user.id);
+
+			// add to global variable to prevent multiple bets placed
+			bet_submitted.push(interaction.user.id);
 		}
 		else{
 			await interaction.reply({ content: 'You don\'t have enough coins for that bet', ephemeral: true });
@@ -276,8 +296,8 @@ client.on(Events.InteractionCreate, async interaction => {
 				console.error(error);
 				await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
 			}
-			// Temp comment out single bet, for testing
-			// bet_submitted.push(interaction.user.id);
+			
+			bet_submitted.push(interaction.user.id);
 		}
 		else{
 			await interaction.reply({ content: 'You don\'t have enough coins for that bet', ephemeral: true });
@@ -310,26 +330,20 @@ async function addBalance(id, amount) {
 		}
 	}
 	catch{
-		const newUser = await Users.create({ user_id: id, balance: amount + 200 });
-		currency.set(id, newUser);
-
-		return newUser.save();
+		//
 	}
 }
 
 function getBalance(id) {
 	const user = currency.get(id);
-	console.log(user)
 	if (user) {
 		return user ? user.balance : 0;
 	}
-	
 	else{
 		const newUser = Users.create({ user_id: id, balance: 200 });
-		currency.set(id, newUser.balance);
-		return newUser ? newUser.balance : 0;
+		currency.set(id,200);
+		return newUser.balance;
 	}
-	
 }
 
 // Set interval for people who are in array to receive coins

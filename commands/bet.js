@@ -28,8 +28,6 @@ var p1_percent = 50
 var p2_percent = 50
 var favourite_player = "Draw"
 var favourite_player_id
-// eslint-disable-next-line no-unused-vars
-var favourite_percentage = "50"
 var voters
 var embed_spacer = "\u200B"
 var update_embed
@@ -43,7 +41,6 @@ var battle_pic_p2 = base_path + 'p2_default.webp'
 var battle_pic_background = base_path + 'battle_background.webp'
 // internal toggle for turning on or off the slider bar
 var gambleting_bar = false
-//var cloudinary_env = process.env.CLD_URL_CMD
 var attachment_file_url = 'http://res.cloudinary.com/dgipqso5p/image/upload/v1672971542/battle_pic.webp'
 var image_uploaded = false
 let image_file_urls = []
@@ -121,12 +118,10 @@ function gamble_calculate (p1,p2){
 	if(p1_percent <= p2_percent){
 		favourite_player = player2_string
 		favourite_player_id = 2
-		favourite_percentage = p2_percent
 	}
 	else if(p2_percent <= p1_percent){
 		favourite_player = player1_string
 		favourite_player_id = 1
-		favourite_percentage = p1_percent
 	}
 	return(p1_percent,p2_percent);
 }
@@ -384,7 +379,6 @@ module.exports = {
 		player1_tagged = false
 		player2_tagged = false
 		favourite_player = 'Draw'
-		favourite_percentage = 50
 		favourite_player_id = 0
 		player1_string = interaction.options.getString('player1') ?? ' - ';
 		player2_string = interaction.options.getString('player2') ?? ' - ';
