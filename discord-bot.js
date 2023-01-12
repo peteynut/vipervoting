@@ -103,6 +103,7 @@ client.on(Events.InteractionCreate, async interaction => {
 		let serverMembers = client.guilds.cache.get(process.env.guildId).members;
 		let matchedMember = serverMembers.cache.find(m => m.id === user_id);
 		currency.delete(user_id)
+		console.log(currency.get(user_id))	
 		await Users.destroy({
 			where: {
 				user_id: user_id
@@ -353,6 +354,7 @@ function getBalance(id) {
 	else{
 		Users.create({ user_id: id, balance: 200 });
 		currency.set(id,200);
+		console.log('created new entry and added $200')
 		return currency.get(id);
 	}
 }
