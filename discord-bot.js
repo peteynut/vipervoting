@@ -72,6 +72,7 @@ client.on(Events.InteractionCreate, async interaction => {
 	let matchedMember = serverMembers.cache.find(m => m.id === user_id);
 		await interaction.reply({content: 'Added ' + matchedMember.displayName + ' to priveledged users.', ephemeral: true});
 		AdminUsers.create({ user_id: user_id, priveledge: 1 });
+		admins.set(user_id,1);
 
 	}
 	else if (interaction.options.getSubcommand() === 'remove_admin_user'){
@@ -79,10 +80,12 @@ client.on(Events.InteractionCreate, async interaction => {
 	let serverMembers = client.guilds.cache.get(process.env.guildId).members;
 	let matchedMember = serverMembers.cache.find(m => m.id === user_id);
 		await interaction.reply({content: 'Removed ' + matchedMember.displayName + ' from priveledged users.', ephemeral: true});
+		admins.delete(user_id)
 		await AdminUsers.destroy({
 			where: {
 				user_id: user_id
 			}
+			
 		});
 	}
 	else if (interaction.options.getSubcommand() === 'setbalance'){
@@ -97,8 +100,9 @@ client.on(Events.InteractionCreate, async interaction => {
 	}
 	else if (interaction.options.getSubcommand() === 'removeuser'){
 		let user_id = interaction.options.getUser('target').id
-	let serverMembers = client.guilds.cache.get(process.env.guildId).members;
-	let matchedMember = serverMembers.cache.find(m => m.id === user_id);
+		let serverMembers = client.guilds.cache.get(process.env.guildId).members;
+		let matchedMember = serverMembers.cache.find(m => m.id === user_id);
+		currency.delete(user_id)
 		await Users.destroy({
 			where: {
 				user_id: user_id
@@ -349,7 +353,7 @@ function getBalance(id) {
 	else{
 		Users.create({ user_id: id, balance: 200 });
 		currency.set(id,200);
-		return currency.get(id).balance;
+		return currency.get(id);
 	}
 }
 
