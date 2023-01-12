@@ -43,7 +43,7 @@ var battle_pic_p2 = base_path + 'p2_default.webp'
 var battle_pic_background = base_path + 'battle_background.webp'
 // internal toggle for turning on or off the slider bar
 var gambleting_bar = false
-var attachment_file_url = 'http://res.cloudinary.com/dgipqso5p/image/upload/v1672971542/battle_pic.webp'
+var attachment_file_url = 'https://res.cloudinary.com/dgipqso5p/image/upload/v1673484169/etetsbattle.webp'
 var image_uploaded = false
 let image_file_urls = []
 var main_bet_interaction
