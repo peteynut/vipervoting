@@ -340,9 +340,9 @@ function getBalance(id) {
 		return user ? user.balance : 0;
 	}
 	else{
-		Users.create({ user_id: id, balance: 200 });
+		const newUser = Users.create({ user_id: id, balance: 200 });
 		currency.set(id,200);
-		return currency.get(id).balance;
+		return newUser.balance();
 	}
 }
 
