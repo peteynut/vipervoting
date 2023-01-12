@@ -219,7 +219,7 @@ client.on(Events.InteractionCreate, async interaction => {
 		}
 		else if (interaction.customId === 'btn_p2bet_payout') {
 			// Do a check for whether user has permission
-			if (admins.get(interaction.user.id).priveledge === 1){
+			if (admins.get(interaction.user.id) === 1){
 				// User has permission
 				let id_dict = await post_winner(interaction,2);
 				payout(id_dict);
@@ -342,7 +342,7 @@ function getBalance(id) {
 	else{
 		const newUser = Users.create({ user_id: id, balance: 200 });
 		currency.set(id,200);
-		return newUser.balance;
+		return newUser.save();
 	}
 }
 
