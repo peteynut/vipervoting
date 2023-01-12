@@ -354,7 +354,7 @@ function getBalance(id) {
 	else{
 		Users.create({ user_id: id, balance: 200 });
 		currency.set(id,200);
-		console.log('created new entry and added $200')
+		console.log('created new entry for ' + id + ' and added $200')
 		return currency.get(id);
 	}
 }
