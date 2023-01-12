@@ -100,6 +100,12 @@ client.on(Events.InteractionCreate, async interaction => {
 		});
 		await interaction.reply({content: 'Removed ' + matchedMember.displayName + ' from currency database.', ephemeral: true});
 	}
+	else if(interaction.commandName==='getcoins'){
+		const target = interaction.options.getUser('user') ?? interaction.user;
+		const balance = getBalance(target.id);
+		await command.execute(interaction,balance);
+		return;
+	}
 	try {
 
 		await command.execute(interaction,client);
@@ -196,7 +202,7 @@ client.on(Events.InteractionCreate, async interaction => {
 		}
 		else if (interaction.customId === 'btn_draw_payout') {
 			// Do a check for whether user has permission
-			if (admins.get(interaction.user.id)=== 1){
+			if (admins.get(interaction.user.id).priveledge === 1){
 				// User has permission
 				let id_dict = await post_winner(interaction,0);
 				payout(id_dict);

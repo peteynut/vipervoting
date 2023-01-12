@@ -374,6 +374,7 @@ module.exports = {
 		player1_votes = 0
 		player2_votes = 0
 		total_bets = 0
+		payout_dict = []
 		player1_bets = 0
 		player2_bets = 0
 		p1_votes_taken = []
