@@ -103,7 +103,6 @@ client.on(Events.InteractionCreate, async interaction => {
 		let serverMembers = client.guilds.cache.get(process.env.guildId).members;
 		let matchedMember = serverMembers.cache.find(m => m.id === user_id);
 		currency.delete(user_id)
-		console.log(currency.get(user_id))	
 		await Users.destroy({
 			where: {
 				user_id: user_id
@@ -332,30 +331,27 @@ async function payout(id_dict){
 }
 async function addBalance(id, amount) {
 	// Add currency
+	const user = currency.get(id);
 
-	try{
-		const user = await currency.get(id)
-		if (user) {
-			user.balance += Number(amount);
-			return user.save();
-			
-		}
+	if (user) {
+		user.balance += Number(amount);
+		return user.save();
 	}
-	catch{
-		//
-	}
+
+	const newUser = await Users.create({ user_id: id, balance: amount });
+	currency.set(id, newUser);
+
+	return newUser;
 }
 
 function getBalance(id) {
-	const user = currency.get(id);
+	let user = currency.get(id);
 	if (user) {
 		return user ? user.balance : 0;
 	}
 	else{
-		Users.create({ user_id: id, balance: 200 });
-		currency.set(id,200);
-		console.log('created new entry for ' + id + ' and added $200')
-		return currency.get(id);
+		addBalance(id,200)
+		return (200);
 	}
 }
 
