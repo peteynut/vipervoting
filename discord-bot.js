@@ -60,6 +60,12 @@ client.on(Events.InteractionCreate, async interaction => {
 		//place holder
 		bet_submitted = []
 	}
+	else if(interaction.commandName=='getcoins'){
+		const target = interaction.options.getUser('target') ?? interaction.user;
+		const balance = getBalance(target.id);
+		await command.execute(interaction,balance);
+		return;
+	}
 	else if (interaction.options.getSubcommand() === 'add_admin_user') {
 		let user_id = interaction.options.getUser('target').id
 	let serverMembers = client.guilds.cache.get(process.env.guildId).members;
@@ -100,12 +106,7 @@ client.on(Events.InteractionCreate, async interaction => {
 		});
 		await interaction.reply({content: 'Removed ' + matchedMember.displayName + ' from currency database.', ephemeral: true});
 	}
-	else if(interaction.commandName==='getcoins'){
-		const target = interaction.options.getUser('user') ?? interaction.user;
-		const balance = getBalance(target.id);
-		await command.execute(interaction,balance);
-		return;
-	}
+	
 	try {
 
 		await command.execute(interaction,client);
